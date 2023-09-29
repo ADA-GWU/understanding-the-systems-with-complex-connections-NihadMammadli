@@ -1,0 +1,22 @@
+This project uses python-socketio and pyqt5 libraries mainly.
+Socketio library is used for both client and server app while pyqt5 library will help us to create windows and manipulate with design
+
+How to run the server/client app(s) ? 
+
+Two ways:
+
+    First way:
+    -- Clone repository
+    -- Install needed libraries
+    -- Run server/main.py 3 or more times 
+    -- Run client/main.py 
+    -- See the results
+
+
+
+    Second Way: 
+    -- Clone repository
+    -- Open apps
+    -- Choose your OS Windows/Linux/Mac
+    -- After chosing your OS just run the server and client apps
+    -- That's it enjoy the result
