@@ -23,7 +23,7 @@ Two ways:
     Second Way: 
     -- Clone repository
     -- Open apps
-    -- Choose your OS Windows/Linux/Mac
+    -- Choose your OS Windows/Linux
     -- After chosing your OS just run the server and client apps
     -- That's it enjoy the result
     
@@ -31,3 +31,15 @@ Two ways:
 -- In both ways you need to write the secret_key for the server app 
 -- In both ways you need to write the ip address (or localhost, 127.0.0.1) and start and end port in client app 
 
+P.S 
+-- As I couldn't find any mac I couldn't test it for mac
+-- For creating one-click app for mac only thing you need to do is:
+    -- pip install pyinstaller
+    -- echo $PATH
+    -- pyinstaller --onefile $LOCATION_OF_CLIENT.PY 
+    -- pyinstaller --onefile $LOCATION_OF_SERVER.PY
+    -- Or just use the source_code
+
+
+
+Thank you !
