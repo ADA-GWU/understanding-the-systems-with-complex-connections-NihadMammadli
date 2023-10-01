@@ -1,9 +1,11 @@
 import sys
+import socket 
+import platform
 from PyQt5 import QtWidgets
 
 from UI.UI import ErrorWindow, ServerWindow
-from Components.Scanner import scan_ports
 from Components.DataCollector import get_user_input
+from Components.Scanner import scan_ports
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
