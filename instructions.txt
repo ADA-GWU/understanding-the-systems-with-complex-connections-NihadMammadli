@@ -8,6 +8,12 @@ Two ways:
     First way:
     -- Clone repository
     -- Install needed libraries
+        -- pip install PyQt5
+
+        ######################
+        pip install python-socketio (not in this version)
+        ######################
+        
     -- Run server/main.py 3 or more times 
     -- Run client/main.py 
     -- See the results
