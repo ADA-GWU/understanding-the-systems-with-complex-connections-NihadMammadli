@@ -1,5 +1,5 @@
 import socket
-from Server.Authentication import authenticate_client
+from Components.Authenticator import authenticate_client
 
 def start_server(window, initial_port, secret_key):
     while True:

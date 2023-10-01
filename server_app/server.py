@@ -1,13 +1,13 @@
 import sys
 import threading
-from PyQt5.QtWidgets import QApplication
+from PyQt5 import QtWidgets
 
-from UI.get_secret_key import get_secret_key
+from UI.KeyCollector import get_secret_key
 from UI.ServerWindow import ServerWindow
-from Server.Runner import start_server
+from Components.Runner import start_server
 
 def main():
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = ServerWindow()
     window.show()
 

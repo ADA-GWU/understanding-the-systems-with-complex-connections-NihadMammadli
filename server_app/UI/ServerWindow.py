@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QMainWindow, QTextEdit, QVBoxLayout, QWidget
+from PyQt5 import QtWidgets
 
-class ServerWindow(QMainWindow):
+class ServerWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -10,12 +10,12 @@ class ServerWindow(QMainWindow):
         self.setGeometry(100, 100, 400, 300)
         self.setWindowTitle('Socket Server')
 
-        self.central_widget = QWidget(self)
+        self.central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.central_widget)
 
-        self.layout = QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
 
-        self.text_edit = QTextEdit(self)
+        self.text_edit = QtWidgets.QTextEdit(self)
         self.text_edit.setReadOnly(True)
         self.layout.addWidget(self.text_edit)
 
