@@ -1,7 +1,9 @@
 import socket
 import random
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QLineEdit, QTextEdit
+from PyQt5 import QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtGui
 
 def scan_ports(target_ip, start_port, end_port):
     open_ports = []
@@ -32,29 +34,29 @@ def send_input_to_socket(target_ip, target_port, input_data):
     except (ValueError, ConnectionRefusedError, TimeoutError):
         print(f"Failed to connect to port {target_port} or invalid input data")
 
-class ServerWindow(QMainWindow):
+class ServerWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 400, 300)
         self.setWindowTitle('Socket Server')
 
-        self.central_widget = QWidget(self)
+        self.central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.central_widget)
 
-        self.layout = QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
 
-        self.text_edit = QTextEdit(self)
+        self.text_edit = QtWidgets.QTextEdit(self)
         self.text_edit.setReadOnly(True)
         self.layout.addWidget(self.text_edit)
 
-        self.input_field = QLineEdit(self)
+        self.input_field = QtWidgets.QLineEdit(self)
         self.layout.addWidget(self.input_field)
 
-        self.enter_button = QPushButton('Enter', self)
+        self.enter_button = QtWidgets.QPushButton('Enter', self)
         self.enter_button.clicked.connect(self.handle_enter_button)
         self.layout.addWidget(self.enter_button)
 
@@ -70,16 +72,54 @@ class ServerWindow(QMainWindow):
             target_port = random.choice(open_ports)
             send_input_to_socket(target_ip, target_port, input_data)
 
+class ErrorWindow(QtWidgets.QMainWindow):
+    def __init__(self, message):
+        super().__init__()
+
+        self.initUI(message)
+
+    def initUI(self, message):
+        self.setGeometry(200, 200, 400, 200)
+        self.setWindowTitle('Error')
+
+        self.message_label = QtWidgets.QLabel(message, self)
+        
+        font = QtGui.QFont()
+        font.setPointSize(32)
+        self.message_label.setFont(font)
+        
+        self.message_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.central_widget = QtWidgets.QWidget(self)
+        self.setCentralWidget(self.central_widget)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(self.message_label)
+        self.central_widget.setLayout(self.layout)
+        
+def get_user_input():
+    global target_ip, start_port, end_port
+    target_ip, ok = QtWidgets.QInputDialog.getText(None, 'Target IP Address', 'Enter Target IP Address (or "localhost"):')
+    if not ok:
+        sys.exit()
+
+    if target_ip.lower() == 'localhost':
+        target_ip = '127.0.0.1'
+
+    start_port, ok = QtWidgets.QInputDialog.getInt(None, 'Start Port', 'Enter Start Port:')
+    if not ok:
+        sys.exit()
+    
+    end_port, ok = QtWidgets.QInputDialog.getInt(None, 'End Port', 'Enter End Port:')
+    if not ok:
+        sys.exit()
+
 def main():
-    global open_ports, target_ip
+    global open_ports, target_ip, start_port, end_port
 
-    app = QApplication(sys.argv)
-    window = ServerWindow()
-    window.show()
-
-    target_ip = '127.0.0.1'
-    start_port = 7700
-    end_port = 10000
+    app = QtWidgets.QApplication(sys.argv)
+    
+    get_user_input()  
 
     open_ports = scan_ports(target_ip, start_port, end_port)
 
@@ -88,9 +128,20 @@ def main():
         for port in open_ports:
             print(f"{port} is open")
 
+        window = ServerWindow()
+        window.text_edit.append(f"Open ports on {target_ip}:\n" + "\n".join([f"{port} is open" for port in open_ports]))
+        window.show()
         sys.exit(app.exec_())
+
     else:
-        print(f"No open ports found on {target_ip}")
+        if target_ip:
+            error_message = f"No open ports were found on {target_ip}"
+        else: 
+            error_message = f"Please enter ip!"
+
+        error_window = ErrorWindow(error_message)
+        error_window.show()
+        sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()

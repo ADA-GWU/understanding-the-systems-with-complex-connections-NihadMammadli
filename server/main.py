@@ -10,7 +10,7 @@ class ServerWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 400, 300)
         self.setWindowTitle('Socket Server')
 
         self.text_edit = QTextEdit(self)
@@ -23,7 +23,7 @@ def start_server(window, initial_port):
             server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server_socket.bind(('localhost', initial_port))
             server_socket.listen(5)
-            window.text_edit.append(f"Server listening on localhost:{initial_port}")
+            window.text_edit.append(f"Server listening on:{initial_port}")
 
             while True:
                 client_socket, client_address = server_socket.accept()
