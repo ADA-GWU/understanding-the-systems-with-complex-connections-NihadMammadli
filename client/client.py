@@ -5,9 +5,7 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
-SECRET_KEY = "Nihad"
-
-def scan_ports(target_ip, start_port, end_port):
+def scan_ports(target_ip, start_port, end_port, secret_key):
     open_ports = []
 
     for port in range(start_port, end_port + 1):
@@ -17,48 +15,47 @@ def scan_ports(target_ip, start_port, end_port):
         try:
             client_socket.connect((target_ip, port))
 
-            client_socket.send(SECRET_KEY.encode())
+            client_socket.send(secret_key.encode())
             auth_response = client_socket.recv(1024).decode()
 
             if auth_response == "Authentication successful":
                 open_ports.append(port)
             else:
                 print(f"Authentication failed for port {port}")
-            
+
             client_socket.close()
         except (ConnectionRefusedError, TimeoutError):
             pass
 
     return open_ports
 
-
-def send_input_to_socket(target_ip, target_port, input_data):
+def send_input_to_socket(target_ip, target_port, input_data, secret_key):
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((target_ip, target_port))
 
-        client_socket.send(SECRET_KEY.encode())
+        client_socket.send(secret_key.encode())
         auth_response = client_socket.recv(1024).decode()
 
         if auth_response == "Authentication successful":
             try:
                 input_int = int(input_data)
-                result = str(input_int * 2)
-                client_socket.send(result.encode())
+                result = input_int * 2
+                client_socket.send(str(result).encode())
 
                 response_data = client_socket.recv(1024).decode()
-                print("Server response:", response_data)
+                return response_data
             except ValueError:
                 print("Invalid input data. Please enter an integer.")
         else:
             print("Authentication failed")
-        
+
         client_socket.close()
-        
+
     except (ConnectionRefusedError, TimeoutError):
         print(f"Failed to connect to port {target_port} or the server is not responding")
 
-
+    return None
 
 class ServerWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -67,7 +64,7 @@ class ServerWindow(QtWidgets.QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(100, 100, 500, 600)
         self.setWindowTitle('Socket Server')
 
         self.central_widget = QtWidgets.QWidget(self)
@@ -86,6 +83,9 @@ class ServerWindow(QtWidgets.QMainWindow):
         self.enter_button.clicked.connect(self.handle_enter_button)
         self.layout.addWidget(self.enter_button)
 
+        enter_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Return), self)  
+        enter_shortcut.activated.connect(self.handle_enter_button)
+
         self.central_widget.setLayout(self.layout)
 
     def handle_enter_button(self):
@@ -96,7 +96,12 @@ class ServerWindow(QtWidgets.QMainWindow):
             self.close()
         else:
             target_port = random.choice(open_ports)
-            send_input_to_socket(target_ip, target_port, input_data)
+            response = send_input_to_socket(target_ip, target_port, input_data, secret_key)
+
+            if response is not None:
+                response_text = f"Port {target_port}: {response}"
+                self.text_edit.append(response_text)
+                print(response_text)
 
 class ErrorWindow(QtWidgets.QMainWindow):
     def __init__(self, message):
@@ -109,11 +114,11 @@ class ErrorWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Error')
 
         self.message_label = QtWidgets.QLabel(message, self)
-        
+
         font = QtGui.QFont()
         font.setPointSize(32)
         self.message_label.setFont(font)
-        
+
         self.message_label.setAlignment(QtCore.Qt.AlignCenter)
 
         self.central_widget = QtWidgets.QWidget(self)
@@ -122,9 +127,9 @@ class ErrorWindow(QtWidgets.QMainWindow):
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.message_label)
         self.central_widget.setLayout(self.layout)
-        
+
 def get_user_input():
-    global target_ip, start_port, end_port
+    global target_ip, start_port, end_port, secret_key
     target_ip, ok = QtWidgets.QInputDialog.getText(None, 'Target IP Address', 'Enter Target IP Address (or "localhost"):')
     if not ok:
         sys.exit()
@@ -135,19 +140,23 @@ def get_user_input():
     start_port, ok = QtWidgets.QInputDialog.getInt(None, 'Start Port', 'Enter Start Port:')
     if not ok:
         sys.exit()
-    
+
     end_port, ok = QtWidgets.QInputDialog.getInt(None, 'End Port', 'Enter End Port:')
     if not ok:
         sys.exit()
 
+    secret_key, ok = QtWidgets.QInputDialog.getText(None, 'Secret Key', 'Enter Secret Key:')
+    if not ok:
+        sys.exit()
+
 def main():
-    global open_ports, target_ip, start_port, end_port
+    global open_ports, target_ip, start_port, end_port, secret_key
 
     app = QtWidgets.QApplication(sys.argv)
-    
-    get_user_input()  
 
-    open_ports = scan_ports(target_ip, start_port, end_port)
+    get_user_input()
+
+    open_ports = scan_ports(target_ip, start_port, end_port, secret_key)
 
     if open_ports:
         print(f"Open ports on {target_ip}:")
@@ -162,8 +171,8 @@ def main():
     else:
         if target_ip:
             error_message = f"No open ports were found on {target_ip}"
-        else: 
-            error_message = f"Please enter ip!"
+        else:
+            error_message = f"Please enter IP!"
 
         error_window = ErrorWindow(error_message)
         error_window.show()
