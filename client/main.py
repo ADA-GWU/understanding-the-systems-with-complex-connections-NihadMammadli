@@ -1,5 +1,7 @@
 import socket
 import random
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QLineEdit, QTextEdit
 
 def scan_ports(target_ip, start_port, end_port):
     open_ports = []
@@ -18,16 +20,63 @@ def scan_ports(target_ip, start_port, end_port):
     return open_ports
 
 def send_input_to_socket(target_ip, target_port, input_data):
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     try:
+        input_int = int(input_data)
+        result = str(input_int * 2)
+
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((target_ip, target_port))
-        client_socket.send(input_data.encode())  
+        client_socket.send(result.encode())
         client_socket.close()
-    except (ConnectionRefusedError, TimeoutError):
-        print(f"Failed to connect to port {target_port}")
+        
+    except (ValueError, ConnectionRefusedError, TimeoutError):
+        print(f"Failed to connect to port {target_port} or invalid input data")
+
+class ServerWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(100, 100, 800, 600)
+        self.setWindowTitle('Socket Server')
+
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
+
+        self.layout = QVBoxLayout()
+
+        self.text_edit = QTextEdit(self)
+        self.text_edit.setReadOnly(True)
+        self.layout.addWidget(self.text_edit)
+
+        self.input_field = QLineEdit(self)
+        self.layout.addWidget(self.input_field)
+
+        self.enter_button = QPushButton('Enter', self)
+        self.enter_button.clicked.connect(self.handle_enter_button)
+        self.layout.addWidget(self.enter_button)
+
+        self.central_widget.setLayout(self.layout)
+
+    def handle_enter_button(self):
+        input_data = self.input_field.text()
+        self.input_field.clear()
+
+        if input_data.lower() == 'exit':
+            self.close()
+        else:
+            target_port = random.choice(open_ports)
+            send_input_to_socket(target_ip, target_port, input_data)
 
 def main():
+    global open_ports, target_ip
+
+    app = QApplication(sys.argv)
+    window = ServerWindow()
+    window.show()
+
     target_ip = '127.0.0.1'
     start_port = 7700
     end_port = 10000
@@ -39,13 +88,7 @@ def main():
         for port in open_ports:
             print(f"{port} is open")
 
-        while True:
-            input_data = input("Enter number or enter 'exit' to quit ): ")
-            if input_data.lower() == 'exit':
-                break  
-
-            target_port = random.choice(open_ports) 
-            send_input_to_socket(target_ip, target_port, input_data)
+        sys.exit(app.exec_())
     else:
         print(f"No open ports found on {target_ip}")
 
